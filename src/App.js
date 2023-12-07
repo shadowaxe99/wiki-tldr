@@ -43,32 +43,52 @@ const App = () => {
   const [debouncedSearchTerm] = useDebounce(wikiName, 500);
 
   const handleSummarize = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post('http://localhost:5000/summarize', { pageName: wikiName });
-      if (response && response.ok) {
-        setSummary(response.data.summary);
-      } else {
-        console.error('Error fetching summary');
+      if (!wikiName) {
+        setErrorMessage('Please enter a Wikipedia page name.');
+        return;
       }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-    setLoading(false);
-  };
+      setLoading(true);
+      try {
+        const response = await axios.post('http://localhost:5000/summarize', { pageName: wikiName });
+        if (response && response.ok) {
+          setSummary(response.data.summary);
+        } else {
+          console.error('Error fetching summary');
+          setErrorMessage('Server error. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        if (error.response) {
+          setErrorMessage('Server error. Please try again later.');
+        } else {
+          setErrorMessage('Network error. Please check your internet connection and try again.');
+        }
+      }
+      setLoading(false);
+    };
 
   const handleSearch = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/search?query=${debouncedSearchTerm}`);
-      if (response && response.ok) {
-        setSearchResults(response.data.pages);
-      } else {
-        console.error('Error fetching search results');
+      if (!debouncedSearchTerm) {
+        setErrorMessage('Please enter a search term.');
+        return;
       }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+      try {
+        const response = await axios.get(`http://localhost:5000/search?query=${debouncedSearchTerm}`);
+        if (response && response.ok) {
+          setSearchResults(response.data.pages);
+        } else {
+          console.error('Error fetching search results');
+          setErrorMessage('Server error. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        if (error.response) {
+          setErrorMessage('Server error. Please try again later.');
+        } else {
+          setErrorMessage('Network error. Please check your internet connection and try again.');
+        }
+      }
+    };
 
   useEffect(() => {
     if (debouncedSearchTerm !== '') {
@@ -79,18 +99,26 @@ const App = () => {
   }, [debouncedSearchTerm]);
 
   const randomizePage = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/random`);
-
-      if (response && response.ok) {
-        setWikiName(response.data.title);
-      } else {
-        console.error('Error fetching random page');
+      setLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:5000/random`);
+  
+        if (response && response.ok) {
+          setWikiName(response.data.title);
+        } else {
+          console.error('Error fetching random page');
+          setErrorMessage('Server error. Please try again later.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        if (error.response) {
+          setErrorMessage('Server error. Please try again later.');
+        } else {
+          setErrorMessage('Network error. Please check your internet connection and try again.');
+        }
       }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+      setLoading(false);
+    };
 
   return (
     <div className="min-h-screen bg-gray-100">
