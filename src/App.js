@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios'; // axios@0.21.1
+import { makeRequest } from './utils';
 
 const App = () => {
   const [wikiName, setWikiName] = useState('');
@@ -23,16 +23,14 @@ const App = () => {
   }, [debouncedSearchTerm]);
 
   const randomizePage = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await axios.get(`http://localhost:5000/random`);
-
-      if (response && response.ok) {
-        setWikiName(response.data.title);
-      } else {
-        console.error('Error fetching random page');
-      }
+      const response = await makeRequest('http://localhost:5000/random');
+      setWikiName(response.title);
     } catch (error) {
       console.error('Error:', error);
+      setError(error);
     }
   };
 
@@ -105,29 +103,27 @@ const App = () => {
 
 export default App;
 const handleSearch = async () => {
+  setLoading(true);
+  setError(null);
   try {
+    const response = await makeRequest('http://localhost:5000/search', { params: { q: wikiName } });
     // ... existing search logic ...
   } catch (error) {
     console.error('Error:', error);
-    setErrorMessage('Failed to search. Please try again.');
+    setError(error);
   }
 };
 
 const randomizePage = async () => {
   setLoading(true);
-  setErrorMessage('');
+  setError(null);
   try {
-    const response = await axios.get('http://localhost:5000/random');
-    if (response && response.ok) {
-      setWikiName(response.data.pageName);
-      setSummary(response.data.summary);
-    } else {
-      console.error('Error fetching random page');
-      setErrorMessage('Failed to fetch random page. Please try again.');
-    }
+    const response = await makeRequest('http://localhost:5000/random');
+    setWikiName(response.pageName);
+    setSummary(response.summary);
   } catch (error) {
     console.error('Error:', error);
-    setErrorMessage('Failed to fetch random page. Please try again.');
+    setError(error);
   }
   setLoading(false);
 };
