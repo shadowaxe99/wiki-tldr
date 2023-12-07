@@ -31,6 +31,7 @@
       const [wikiName, setWikiName] = React.useState('');
       const [summary, setSummary] = React.useState('');
       const [loading, setLoading] = React.useState(false);
+const [errorMessage, setErrorMessage] = React.useState('');
 
       const handleSummarize = async () => {
         setLoading(true);
@@ -48,11 +49,11 @@
             const data = await response.json();
             setSummary(data.summary);
           } else {
+            setErrorMessage(response.statusText);
             console.error('Error fetching summary');
           }
-        } catch (error) {
-          console.error('Error:', error);
-        }
+        } catch (error) {console.error('Error:', error);
+          setErrorMessage(error.message);}
         setLoading(false);
       };
 
@@ -63,7 +64,15 @@
             <p className="text-lg text-center text-gray-600 mb-10">
               Get a TLDR summary of any Wikipedia page.
             </p>
-            <div className="flex justify-center">
+            {errorMessage && (
+  <div className="mb-4">
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <strong className="font-bold">Error:</strong>
+      <span className="block sm:inline"> {errorMessage}</span>
+    </div>
+  </div>
+)}
+<div className="flex justify-center">
               <div className="w-full max-w-md">
                 <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                   <div className="mb-4">
