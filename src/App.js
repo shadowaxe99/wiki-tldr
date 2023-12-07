@@ -160,3 +160,112 @@ const App = () => {
 };
 
 export default App;
+const handleSearch = async () => {
+  try {
+    // ... existing search logic ...
+  } catch (error) {
+    console.error('Error:', error);
+    setErrorMessage('Failed to search. Please try again.');
+  }
+};
+
+const randomizePage = async () => {
+  setLoading(true);
+  setErrorMessage('');
+  try {
+    const response = await axios.get('http://localhost:5000/random');
+    if (response && response.ok) {
+      setWikiName(response.data.pageName);
+      setSummary(response.data.summary);
+    } else {
+      console.error('Error fetching random page');
+      setErrorMessage('Failed to fetch random page. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    setErrorMessage('Failed to fetch random page. Please try again.');
+  }
+  setLoading(false);
+};
+
+// Loading indicator for summarize button
+const summarizeButtonLabel = loading ? 'Summarizing...' : 'Summarize';
+
+// Loading indicator for randomize button
+const randomizeButtonLabel = loading ? 'Randomizing...' : 'Randomize';
+
+// ... existing JSX ...
+
+// Update the summarize button with loading indicator
+<button
+  className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+  type="button"
+  onClick={handleSummarize}
+  disabled={loading}
+>
+  {summarizeButtonLabel}
+</button>
+
+// Update the randomize button with loading indicator
+<button
+  className={`bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+  type="button"
+  onClick={randomizePage}
+  disabled={loading}
+>
+  {randomizeButtonLabel}
+</button>
+
+// ... rest of the JSX ...
+
+const ITEMS_PER_PAGE = 10; // Number of search results per page
+
+// New state variables for pagination
+const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(0);
+
+// Function to calculate paginated search results
+const paginatedResults = () => {
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  return searchResults.slice(startIndex, endIndex);
+};
+
+// Function to handle page change
+const handlePageChange = (newPage) => {
+  setCurrentPage(newPage);
+};
+
+// Update the handleSearch function to set total pages
+// ... inside handleSearch function, after fetching search results ...
+setTotalPages(Math.ceil(searchResults.length / ITEMS_PER_PAGE));
+
+// Pagination UI
+const Pagination = ({ currentPage, totalPages, onPageChange }) => (
+  <div className="flex justify-center items-center space-x-2 mt-4">
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+      <button
+        key={page}
+        className={`px-4 py-2 border ${currentPage === page ? 'bg-blue-500 text-white' : 'bg-white'}`}
+        onClick={() => onPageChange(page)}
+      >
+        {page}
+      </button>
+    ))}
+  </div>
+);
+
+Pagination.propTypes = {
+  currentPage: PropTypes.number.isRequired,
+  totalPages: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+};
+
+// ... existing JSX ...
+
+// Add Pagination component below search results
+<Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={handlePageChange}
+/>
