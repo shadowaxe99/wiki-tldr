@@ -6,11 +6,24 @@ const App = () => {
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/search?query=${wikiName}`);
+      if (response.status === 200 && response.data.results) {
+        setSearchResults(response.data.results);
       } else {
-        console.error('Error fetching search results');
+        throw new Error('Error fetching search results');
       }
     } catch (error) {
       console.error('Error:', error);
+      if (error.response) {
+        setError(`Error: ${error.response.data.message}`);
+      } else if (error.request) {
+        setError('Error: Network error');
+      } else {
+        setError(`Error: ${error.message}`);
+      }
     }
   };
 
@@ -115,19 +128,24 @@ const handleSearch = async () => {
 
 const randomizePage = async () => {
   setLoading(true);
-  setErrorMessage('');
+  setError('');
   try {
     const response = await axios.get('http://localhost:5000/random');
-    if (response && response.ok) {
+    if (response && response.ok && response.data.pageName && response.data.summary) {
       setWikiName(response.data.pageName);
       setSummary(response.data.summary);
     } else {
-      console.error('Error fetching random page');
-      setErrorMessage('Failed to fetch random page. Please try again.');
+      throw new Error('Error fetching random page');
     }
   } catch (error) {
     console.error('Error:', error);
-    setErrorMessage('Failed to fetch random page. Please try again.');
+    if (error.response) {
+      setError(`Error: ${error.response.data.message}`);
+    } else if (error.request) {
+      setError('Error: Network error');
+    } else {
+      setError(`Error: ${error.message}`);
+    }
   }
   setLoading(false);
 };
