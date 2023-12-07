@@ -1,67 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import axios from 'axios'; // axios@0.21.1
-import useDebounce from 'use-debounce/lib/useDebounce'; // use-debounce@6.0.0
-import { SearchIcon } from '@heroicons/react/outline';  // heroicons@1.0.5
-
-const Summary = ({ summary }) => (
-  <div className="bg-gray-200 p-4 rounded shadow-md">
-    <p className="text-gray-700">{summary}</p>
-  </div>
-);
-
-Summary.propTypes = {
-  summary: PropTypes.string.isRequired,
-};
-
-const SearchResults = ({ searchResults, setSearchResults, setWikiName }) => (
-  <div className="bg-white shadow-md rounded">
-    {searchResults.map((result) => (
-      <div
-        key={result.pageid}
-        className="px-4 py-2 cursor-pointer hover:bg-gray-200"
-        onClick={() => setWikiName(result.title)}
-      >
-        <p className="text-sm text-gray-700">{result.title}</p>
-      </div>
-    ))}
-  </div>
-);
-
-SearchResults.propTypes = {
-  searchResults: PropTypes.array.isRequired,
-  setSearchResults: PropTypes.func.isRequired,
-  setWikiName: PropTypes.func.isRequired,
-};
 
 const App = () => {
   const [wikiName, setWikiName] = useState('');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
-
-  const [debouncedSearchTerm] = useDebounce(wikiName, 500);
-
-  const handleSummarize = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post('http://localhost:5000/summarize', { pageName: wikiName });
-      if (response && response.ok) {
-        setSummary(response.data.summary);
-      } else {
-        console.error('Error fetching summary');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-    setLoading(false);
-  };
-
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5000/search?query=${debouncedSearchTerm}`);
-      if (response && response.ok) {
-        setSearchResults(response.data.pages);
+  const [error, setError] = useState(null);
       } else {
         console.error('Error fetching search results');
       }
