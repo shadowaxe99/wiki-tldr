@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeRequest } from './utils';
 
 const App = () => {
@@ -6,23 +6,53 @@ const App = () => {
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await makeRequest('http://localhost:5000/search', { params: { q: wikiName } });
+      if (response.status === 200) {
+        setSummary(response.data.summary);
+        setLoading(false);
       } else {
         console.error('Error fetching search results');
+        setError('Error fetching search results');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error:', error);
+      setError(error);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (debouncedSearchTerm !== '') {
+    if (wikiName !== '') {
       handleSearch();
-    } else {
-      setSearchResults([]);
     }
-  }, [debouncedSearchTerm]);
+  }, [wikiName]);
 
   const randomizePage = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await makeRequest('http://localhost:5000/random');
+      if (response.status === 200) {
+        setWikiName(response.data.pageName);
+        setSummary(response.data.summary);
+        setLoading(false);
+      } else {
+        console.error('Error fetching random page');
+        setError('Error fetching random page');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setError(error);
+      setLoading(false);
+    }
+  };
     setLoading(true);
     setError(null);
     try {
